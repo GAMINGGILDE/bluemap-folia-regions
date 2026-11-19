@@ -2,7 +2,7 @@
 
 Zeigt Folia-Tick-Regionen als übersichtliches Marker-Overlay in **BlueMap** an.
 
-> Der Branch `version-2` enthält die Entwicklung von Version 2.
+Version **2.0.2** ist für **Folia 26.3 Build 26** (`eca40f9`) vorgesehen.
 
 <img width="809" height="502" alt="Folia-Regionen in BlueMap" src="https://github.com/user-attachments/assets/3153a9f2-dbf4-4259-bbf9-d4fbbef9c754" />
 
@@ -19,17 +19,18 @@ Zeigt Folia-Tick-Regionen als übersichtliches Marker-Overlay in **BlueMap** an.
 
 ## Voraussetzungen
 
-- **Folia** in einer zum Plugin-Build passenden Version
-- **BlueMap** mit verfügbarer BlueMapAPI
+- **Folia 26.3 Build 26** mit **Java 25**
+- **BlueMap** für Paper/Folia (getestet mit **5.23**, Build-Abhängigkeit BlueMapAPI **2.7.8**)
 
 Für einen lokalen Build werden zusätzlich **JDK 25** und der mitgelieferte Gradle-Wrapper benötigt.
 
 ## Installation
 
 1. BlueMap installieren und einmal starten, damit die Maps angelegt werden.
-2. Die Plugin-JAR in den Ordner `plugins/` legen.
-3. Den Server neu starten.
-4. In BlueMap unter „Marker“ das Overlay „Folia Tick-Regionen“ aktivieren.
+2. Den Server stoppen. Bei einem Update die bisherige BlueMap-Folia-Regions-JAR aus `plugins/` entfernen und die vorhandene `config.yml` behalten.
+3. `BlueMap-Folia-Regions-2.0.2.jar` in `plugins/` legen und den Server starten.
+4. Nach dem Laden von BlueMap mit `/bmfr refresh` aktualisieren. Mit `/bmfr status` Version, geplante Maps und den letzten Aktualisierungszeitpunkt je Map prüfen.
+5. In BlueMap unter „Marker“ das Overlay „Folia Tick-Regionen“ aktivieren und in einer geladenen Region den Zeitstempel „Stand“ über zwei Aktualisierungen vergleichen.
 
 ## Konfiguration
 
@@ -67,10 +68,11 @@ Die Berechtigungen heißen entsprechend `bluemapfoliaregions.reload`, `bluemapfo
 ## Dokumentation
 
 - [Konfiguration und Formatplatzhalter](docs/CONFIGURATION.md)
+- [Integrationstest für Folia 26.3](docs/INTEGRATION.md)
 - [Release mit Git-Tags erstellen](docs/RELEASE.md)
 
 ## Build
 
 ```bash
-./gradlew build
+./gradlew clean build
 ```

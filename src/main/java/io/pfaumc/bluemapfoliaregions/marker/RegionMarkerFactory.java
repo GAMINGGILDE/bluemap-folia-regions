@@ -1,6 +1,6 @@
 package io.pfaumc.bluemapfoliaregions.marker;
 
-import ca.spottedleaf.moonrise.common.time.TickData.TickReportData;
+import ca.spottedleaf.common.time.TickData.TickReportData;
 import com.flowpowered.math.vector.Vector2d;
 import de.bluecolored.bluemap.api.markers.ShapeMarker;
 import de.bluecolored.bluemap.api.math.Shape;
@@ -19,6 +19,8 @@ import io.papermc.paper.threadedregions.TickRegions.TickRegionSectionData;
 import io.papermc.paper.threadedregions.TickRegionScheduler.RegionScheduleHandle;
 import net.minecraft.world.level.ChunkPos;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +37,15 @@ public class RegionMarkerFactory {
 
     public RegionMarkerFactory(int sectionChunkSize) {
         this.sectionBlockSize = sectionChunkSize * 16;
+    }
+
+    public static void verifyReportSignatures(Class<?> handleType) throws NoSuchMethodException, IllegalAccessException {
+        MethodType signature = MethodType.methodType(TickReportData.class, long.class);
+        for (ReportWindow window : ReportWindow.values()) {
+            MethodHandles.publicLookup().findVirtual(
+                    handleType, "getTickReport" + window.configValue(), signature
+            );
+        }
     }
 
     public MarkerBuildResult createMarkers(
