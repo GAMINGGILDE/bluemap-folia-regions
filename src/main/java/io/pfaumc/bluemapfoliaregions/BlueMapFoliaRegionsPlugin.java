@@ -12,6 +12,7 @@ import io.pfaumc.bluemapfoliaregions.performance.ReportWindow;
 import io.pfaumc.bluemapfoliaregions.performance.RegionTrendTracker;
 import io.pfaumc.bluemapfoliaregions.performance.VisualizationMode;
 import io.papermc.paper.threadedregions.ThreadedRegionizer;
+import io.papermc.paper.threadedregions.TickRegionScheduler.RegionScheduleHandle;
 import io.papermc.paper.threadedregions.TickRegions;
 import io.papermc.paper.threadedregions.TickRegions.TickRegionData;
 import io.papermc.paper.threadedregions.TickRegions.TickRegionSectionData;
@@ -45,7 +46,7 @@ public class BlueMapFoliaRegionsPlugin extends JavaPlugin {
     private final ConcurrentMap<String, MapUpdateStatus> mapStatuses = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, RegionTrendTracker> trendTrackers = new ConcurrentHashMap<>();
     private final LifecycleGeneration lifecycleGeneration = new LifecycleGeneration();
-    private final RegionMarkerFactory markerFactory = new RegionMarkerFactory(1 << TickRegions.getRegionChunkShift());
+    private RegionMarkerFactory markerFactory;
     private volatile PluginConfiguration configuration;
     private volatile BlueMapAPI currentApi;
     private BlueMapFoliaRegionsCommand command;
@@ -56,6 +57,16 @@ public class BlueMapFoliaRegionsPlugin extends JavaPlugin {
         this.shuttingDown = false;
         saveDefaultConfig();
         this.configuration = PluginConfiguration.from(this);
+        try {
+            RegionMarkerFactory.verifyReportSignatures(RegionScheduleHandle.class);
+        } catch (NoSuchMethodException | IllegalAccessException | LinkageError exception) {
+            getLogger().log(Level.SEVERE, "Incompatible Folia tick reports on " + Bukkit.getVersion()
+                    + ". This plugin requires the report signatures of Folia 26.3 build 26. "
+                    + "Disabling the plugin before starting marker updates.", exception);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        this.markerFactory = new RegionMarkerFactory(1 << TickRegions.getRegionChunkShift());
         registerPermissions();
         registerCommand();
 
@@ -70,7 +81,10 @@ public class BlueMapFoliaRegionsPlugin extends JavaPlugin {
         cancelAllTasks();
         this.mapStatuses.clear();
         this.trendTrackers.clear();
-        BlueMapAPI.getInstance().ifPresent(this::removeAllMarkerSets);
+        BlueMapAPI api = this.currentApi;
+        if (api != null) {
+            removeAllMarkerSets(api);
+        }
         unregisterCommand();
         this.currentApi = null;
     }

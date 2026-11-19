@@ -1,15 +1,38 @@
 package io.pfaumc.bluemapfoliaregions.marker;
 
+import ca.spottedleaf.common.time.TickData.TickReportData;
 import com.flowpowered.math.vector.Vector2d;
+import io.papermc.paper.threadedregions.TickRegionScheduler.RegionScheduleHandle;
 import io.pfaumc.bluemapfoliaregions.marker.RegionMarkerFactory.RegionPolygon;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegionMarkerFactoryTest {
+    @Test
+    void startupCheckRejectsAChangedReturnType() {
+        NoSuchMethodException error = assertThrows(NoSuchMethodException.class,
+                () -> RegionMarkerFactory.verifyReportSignatures(IncompatibleHandle.class));
+        assertTrue(error.getMessage().contains("getTickReport5s"));
+    }
+
+    public interface IncompatibleHandle {
+        Object getTickReport5s(long now);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"5s", "15s", "1m", "5m", "15m"})
+    void foliaReportReturnsExpectedType(String window) throws NoSuchMethodException {
+        var method = RegionScheduleHandle.class.getMethod("getTickReport" + window, long.class);
+        assertEquals(TickReportData.class, method.getReturnType());
+    }
+
     @Test
     void createsSingleSectionOutline() {
         List<RegionPolygon> polygons = polygons(section(0, 0));

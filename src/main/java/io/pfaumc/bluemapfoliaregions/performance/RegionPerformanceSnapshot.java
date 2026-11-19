@@ -1,6 +1,6 @@
 package io.pfaumc.bluemapfoliaregions.performance;
 
-import ca.spottedleaf.moonrise.common.time.TickData.TickReportData;
+import ca.spottedleaf.common.time.TickData.TickReportData;
 
 import java.util.Arrays;
 
@@ -25,8 +25,7 @@ public record RegionPerformanceSnapshot(
             return unavailable(reportWindow);
         }
 
-        // Calculate these from the raw values because Folia 26.1.2 exposes the
-        // one- and five-percent segments through swapped record components.
+        // Derive both tails from the same samples without reordering Folia's report.
         long[] tickTimes = report.timePerTickData().rawData().clone();
         Arrays.sort(tickTimes);
         return new RegionPerformanceSnapshot(

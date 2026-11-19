@@ -1,8 +1,8 @@
 package io.pfaumc.bluemapfoliaregions.performance;
 
-import ca.spottedleaf.moonrise.common.time.TickData.SegmentData;
-import ca.spottedleaf.moonrise.common.time.TickData.SegmentedAverage;
-import ca.spottedleaf.moonrise.common.time.TickData.TickReportData;
+import ca.spottedleaf.common.time.TickData.SegmentData;
+import ca.spottedleaf.common.time.TickData.SegmentedAverage;
+import ca.spottedleaf.common.time.TickData.TickReportData;
 import org.junit.jupiter.api.Test;
 
 import java.util.stream.LongStream;
@@ -39,6 +39,21 @@ class RegionPerformanceSnapshotTest {
         assertFalse(snapshot.available());
         assertEquals(ReportWindow.FIVE_SECONDS, snapshot.reportWindow());
         assertEquals(0, snapshot.collectedTicks());
+    }
+
+    @Test
+    void representsZeroCollectedTicksAsUnavailable() {
+        TickReportData empty = new TickReportData(0, 0L, 0L, 0L, 0.0D, null, null, null);
+        assertEquals(RegionPerformanceSnapshot.unavailable(ReportWindow.ONE_MINUTE),
+                RegionPerformanceSnapshot.from(empty, ReportWindow.ONE_MINUTE));
+    }
+
+    @Test
+    void usesSingleMeasurementForBothWorstSegments() {
+        TickReportData single = report(new long[] { 3_500_000L }, 20.0D, 3_500_000.0D, 0.07D);
+        RegionPerformanceSnapshot snapshot = RegionPerformanceSnapshot.from(single, ReportWindow.FIVE_MINUTES);
+        assertEquals(new RegionPerformanceSnapshot(true, ReportWindow.FIVE_MINUTES, 1,
+                20.0D, 3.5D, 3.5D, 3.5D, 0.07D), snapshot);
     }
 
     private static TickReportData report(
